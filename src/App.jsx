@@ -1,40 +1,17 @@
 import React, { useRef } from "react";
+import { dataTodos } from "./mocks/dataTodos";
+import { sortByTitle } from "./utils/sortByTitle";
 
 function App() {
   const titleRef = React.useRef(null);
   const authorRef = React.useRef(null);
   const severityRef = React.useRef(null);
   const descriptionRef = React.useRef(null);
-  const selectAuthorRef = React.useRef(null);
+  const orderByValueRef = React.useRef(null);
   const searchRef = React.useRef(null);
 
-  const [issueTracker, setIssueTracker] = React.useState([
-    {
-      id: 1,
-      title: "Aop",
-      author: "Loc",
-      description: "Lorem tracker....",
-      severity: "low",
-      status: "new",
-    },
-    {
-      id: 2,
-      title: "Cew",
-      author: "Loc",
-      description: "Lorem tracker....",
-      severity: "medium",
-      status: "new",
-    },
-    {
-      id: 3,
-      title: "Bop",
-      author: "Loc",
-      description: "Lorem tracker....",
-      severity: "high",
-      status: "new",
-    },
-  ]);
-  const [filterIssue, setFilterIssue] = React.useState([]);
+  const [issueTracker, setIssueTracker] = React.useState(dataTodos);
+  const [filterIssues, setFilterIssues] = React.useState([]);
 
   function addIssueTracker(e) {
     e.preventDefault();
@@ -49,40 +26,41 @@ function App() {
     setIssueTracker((prevState) => {
       return [...prevState, items];
     });
-    setFilterIssue((prevState) => {
-      return [...prevState,items]
-    })
   }
 
   function deleteIssueTracker(idIssue) {
-    const newIssue = [...issueTracker].filter((items) => items.id !== idIssue);
+    const newIssue = issueTracker.filter((items) => items.id !== idIssue);
     setIssueTracker(newIssue);
-    setFilterIssue(newIssue);
   }
 
   function closeIssueTracker(idIssue) {
-    const updateIssue = issueTracker.map((items) =>
-      items.id === idIssue ? { ...items, status: "done" } : items
-    );
-    setIssueTracker(updateIssue);
-    setFilterIssue(updateIssue);
+    // const updateIssue = issueTracker.map((items) =>
+    //   items.id === idIssue ? { ...items, status: "done" } : items
+    // );
+    // setIssueTracker(updateIssue);
+    const newTrackers =  [...issueTracker];
+    const indexTracker = newTrackers.findIndex(item => item.id === idIssue);
+
+    if(indexTracker === -1) return;
+    newTrackers[indexTracker].status = 'done';
+    setIssueTracker(newTrackers);
   }
 
-  function selectAuthor() {
-    if (selectAuthorRef.current.value === "asc") {
-      const ascIssue = [...issueTracker].sort((a, b) =>
-        a.title.localeCompare(b.title)
-      );
-      setIssueTracker(ascIssue);
-      setFilterIssue(ascIssue);
-    }
-    if (selectAuthorRef.current.value === "desc") {
-      const descIssue = [...issueTracker].sort((a, b) =>
-        b.title.localeCompare(a.title)
-      );
-      setIssueTracker(descIssue);
-      setFilterIssue(descIssue);
-    }
+  function orderBy() {
+    // if (orderByValueRef.current.value === "asc") {
+    //   const ascIssue = [...issueTracker].sort((a, b) =>
+    //     a.title.localeCompare(b.title)
+    //   );
+    //   setIssueTracker(ascIssue);
+    // }
+    // if (orderByValueRef.current.value === "desc") {
+    //   const descIssue = [...issueTracker].sort((a, b) =>
+    //     b.title.localeCompare(a.title)
+    //   );
+    //   setIssueTracker(descIssue);
+    // }
+    const newIssues = sortByTitle(issueTracker, orderByValueRef.current.value);
+    setIssueTracker(newIssues);
   }
 
   function searchIssue() {
@@ -90,8 +68,17 @@ function App() {
     const searchResults = issueTracker.filter((items) =>
         items.title.toLowerCase().includes(searchValue)
       );
-      setFilterIssue(searchResults);
+    setIssueTracker(searchResults);
   }
+  
+  function filterIssue(type) {
+    const issuesFiltered = [...issueTracker].filter((items) =>
+      items.status.toLowerCase().includes(type.toLowerCase())
+    );
+    setFilterIssues(issuesFiltered);
+  }
+
+  console.log(issueTracker)
 
   return (
     <>
@@ -176,13 +163,22 @@ function App() {
             </div>
             <div className="flex items-center mt-6">
               <h3 className="mr-[100px]">Filter:</h3>
-              <button class="mr-3 w-[70px] h-[40px] bg-blue-500 hover:bg-blue-700 text-white  py-2 px-4 rounded duration-200 ease-linear">
+              <button 
+                onClick={() => filterIssue('ALL')}
+                class="mr-3 w-[70px] h-[40px] bg-blue-500 hover:bg-blue-700 text-white  py-2 px-4 rounded duration-200 ease-linear"
+              >
                 All
               </button>
-              <button class="mr-3 bg-[#28A745] hover:bg-[#218838] text-white  py-2 px-4 rounded duration-200 ease-linear">
+              <button 
+                onClick={() => filterIssue('NEW')}
+                class="mr-3 bg-[#28A745] hover:bg-[#218838] text-white  py-2 px-4 rounded duration-200 ease-linear"
+              >
                 Open
               </button>
-              <button class="bg-[#1DA1B8] hover:bg-[#177D8F] text-white py-2 px-4 rounded duration-200 ease-linear">
+              <button 
+                onClick={() => filterIssue('DONE')}
+                class="bg-[#1DA1B8] hover:bg-[#177D8F] text-white py-2 px-4 rounded duration-200 ease-linear"
+              >
                 Close
               </button>
             </div>
@@ -190,8 +186,8 @@ function App() {
               <h3 className="mr-[72px]">Order by:</h3>
               <select
                 id="issueAuthor"
-                ref={selectAuthorRef}
-                onChange={selectAuthor}
+                ref={orderByValueRef}
+                onChange={orderBy}
                 class="mt-3 mb-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-[200px] p-2.5   "
               >
                 <option selected>Choose...</option>
@@ -203,7 +199,7 @@ function App() {
           <div></div>
         </div>
         {/* Card Items */}
-        {(filterIssue.length > 0 ? filterIssue : issueTracker).map((items) => {
+        {(filterIssues.length > 0 ? filterIssues : issueTracker).map((items) => {
           return (
             <div
               className="max-w-full mt-3 p-6 bg-white border border-gray-200 rounded-lg shadow  "
