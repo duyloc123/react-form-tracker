@@ -3,24 +3,39 @@ import { dataTodos } from "./mocks/dataTodos";
 import { sortByTitle } from "./utils/sortByTitle";
 
 function App() {
-  const titleRef = React.useRef(null);
-  const authorRef = React.useRef(null);
-  const severityRef = React.useRef(null);
-  const descriptionRef = React.useRef(null);
   const orderByValueRef = React.useRef(null);
   const searchRef = React.useRef(null);
+  const [form, setForm] = React.useState({
+    title: '',
+    author: '',
+    severity: '',
+    description: '',
+    orderyBy: '',
+    searchBy: ''
+  })
 
   const [issueTracker, setIssueTracker] = React.useState(dataTodos);
   const [filterIssues, setFilterIssues] = React.useState([]);
 
+  function onChangeForm(e) {
+    const { name, value } = e.target;
+    setForm(prevState => {
+      return {
+        ...prevState,
+        [name]: value
+      }
+    })
+  }
+
   function addIssueTracker(e) {
     e.preventDefault();
+    const { title, author, severity, description } = form;
     const items = {
       id: issueTracker.length + 1,
-      title: titleRef.current.value,
-      author: authorRef.current.value,
-      severity: severityRef.current.value,
-      description: descriptionRef.current.value,
+      title,
+      author,
+      severity,
+      description,
       status: "new",
     };
     setIssueTracker((prevState) => {
@@ -78,7 +93,7 @@ function App() {
     setFilterIssues(issuesFiltered);
   }
 
-  console.log(issueTracker)
+  console.log(form)
 
   return (
     <>
@@ -87,20 +102,25 @@ function App() {
           Issue Tracker
         </h1>
         {/* Form Issue */}
-        <form action="" className="mt-[50px]" id="issueTracker">
+        <form className="mt-[50px]" id="issueTracker">
           <label htmlFor="issueTitle">Title</label>
           <input
             type="text"
             id="issueTitle"
-            ref={titleRef}
+            name="title"
+            value={form.title}
             className="mt-3 mb-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5   "
             placeholder="Title..."
             required
+            onChange={onChangeForm}
           />
+
           <label htmlFor="issueAuthor">Author</label>
           <select
             id="issueAuthor"
-            ref={authorRef}
+            name="author"
+            value={form.author}
+            onChange={onChangeForm}
             class="mt-3 mb-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5   "
           >
             <option selected className="text-gray-300">
@@ -113,7 +133,9 @@ function App() {
           <label htmlFor="issueSeverity">Severity</label>
           <select
             id="issueSeverity"
-            ref={severityRef}
+            name="severity"
+            value={form.severity}
+            onChange={onChangeForm}
             className="mt-3 mb-4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5   "
           >
             <option selected>Choose severity...</option>
@@ -121,14 +143,18 @@ function App() {
             <option value="Medium">Medium</option>
             <option value="High">High</option>
           </select>
+
           <label htmlFor="issueDescription">Description</label>
           <textarea
             id="issueDescription"
             rows="4"
-            ref={descriptionRef}
+            name="description"
+            value={form.description}
+            onChange={onChangeForm}
             class="block mt-3 p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500   "
             placeholder="Write your thoughts here..."
-          ></textarea>
+          />
+
           <div className=" w-full inline-block mb-4 mt-4 ">
             <button
               className=" float-right bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded duration-300 ease-linear"
