@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+import { getFieldError, hasErrors } from '../utils/getFieldError';
 
 function TodoForm({ addIssueTracker }) {
   const [form, setForm] = React.useState({
@@ -9,7 +10,7 @@ function TodoForm({ addIssueTracker }) {
     orderyBy: '',
     searchBy: ''
   })
-  const [isSubmitted, setIsSubmitted] = React.useState(false)
+  const [showError, setShowError] = React.useState(false);
 
   function onChangeForm(e) {
     const { name, value } = e.target;
@@ -19,64 +20,34 @@ function TodoForm({ addIssueTracker }) {
     }))
   }
 
-  // Validation
-  function getFieldError(field, value) {
-    switch (field) {
-      case 'title':
-        if (value.trim() === '' || value.length < 13) {
-          return 'Title must not be blank and must be at least 13 characters long';
-        }
-        break;
-      case 'author':
-        if (value === '') {
-          return "Must not leave the author's name blank";
-        }
-        break;
-      case 'severity':
-        if (value === '') {
-          return "Must not leave the serverity blank";
-        }
-        break;
-      case 'description':
-        if (value.trim() === '' || value.length < 30) {
-          return 'Description must not be blank and must be at least 13 characters long';
-        }
-        break;
-      default:
-        return '';
-    }
-    return '';
-  }
-
-  function hasErrors() {
-    return Object.keys(form).some(key => getFieldError(key, form[key]) !== '');
-  }
-
   function submit(e) {
     e.preventDefault();
-    setIsSubmitted(true);
-    if(!hasErrors()){
-      const { title, author, severity, description } = form;
-      const item = {
-        id: Date.now(),
-        title,
-        author,
-        severity,
-        description,
-        status: "new",
-      };
-      addIssueTracker(item);
-      
-      setForm({
-        title: '',
-        author: '',
-        severity: '',
-        description: '',
-        orderyBy: '',
-        searchBy: ''
-      });
-      setIsSubmitted(false);
-    } return;
+
+    if(hasErrors()) {
+      setShowError(true);
+      return;
+    }
+
+    const { title, author, severity, description } = form;
+    const item = {
+      id: Date.now(),
+      title,
+      author,
+      severity,
+      description,
+      status: "new",
+    };
+    addIssueTracker(item);
+    
+    setForm({
+      title: '',
+      author: '',
+      severity: '',
+      description: '',
+      orderyBy: '',
+      searchBy: ''
+    });
+    setShowError(false);
   }
 
   return (
@@ -92,7 +63,7 @@ function TodoForm({ addIssueTracker }) {
         required
         onChange={onChangeForm}
       />
-      {isSubmitted && getFieldError('title', form.title) && 
+      {showError && getFieldError('title', form.title) && 
         <p className="text-red-500 text-xs mb-3">{getFieldError('title', form.title)}</p>}
 
       <label htmlFor="issueAuthor">Author</label>
@@ -108,7 +79,7 @@ function TodoForm({ addIssueTracker }) {
         <option value="loc">Loc</option>
         <option value="hoa">Hoa</option>
       </select>
-      {isSubmitted && getFieldError('author', form.author) && 
+      {showError && getFieldError('author', form.author) && 
         <p className="text-red-500 text-xs mb-3">{getFieldError('author', form.author)}</p>}
 
       <label htmlFor="issueSeverity">Severity</label>
@@ -124,7 +95,7 @@ function TodoForm({ addIssueTracker }) {
         <option value="Medium">Medium</option>
         <option value="High">High</option>
       </select>
-      {isSubmitted && getFieldError('severity', form.severity) && 
+      {showError && getFieldError('severity', form.severity) && 
         <p className="text-red-500 text-xs mb-3">{getFieldError('severity', form.severity)}</p>}
 
       <label htmlFor="issueDescription">Description</label>
@@ -137,7 +108,7 @@ function TodoForm({ addIssueTracker }) {
         className="block mt-3 mb-1 p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500"
         placeholder="Write your thoughts here..."
       />
-      {isSubmitted && getFieldError('description', form.description) && 
+      {showError && getFieldError('description', form.description) && 
         <p className="text-red-500 text-xs mb-3">{getFieldError('description', form.description)}</p>}
 
       <div className="w-full inline-block mb-4 mt-4">
